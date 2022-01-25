@@ -13,13 +13,6 @@ use App\Http\Resources\ProductCollection;
 
 class ProductController extends Controller
 {
-    // public $statusList = [
-    //     'success' => 200,
-    //     'unauthorized' => 401,
-    //     'not-found' => 404,
-    //     'internal-error' => 500,
-    // ];
-
     /**
      * Display a listing of the resource.
      *
