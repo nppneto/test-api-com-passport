@@ -10,13 +10,6 @@ use App\Models\User;
 
 class UserController extends Controller
 {
-    public $statusList = [
-        'success' => 200,
-        'unauthorized' => 401,
-        'not-found' => 404,
-        'internal-error' => 500,
-    ];
-
     public function login()
     {
         $credentials = [
