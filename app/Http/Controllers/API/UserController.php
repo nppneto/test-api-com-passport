@@ -27,10 +27,16 @@ class UserController extends Controller
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
             $success['token'] = $user->createToken('MyApp')->accessToken;
-            return response()->json(['data' => $success], $this->statusList['success']);
+            return response()->json([
+                'data' => $success,
+                'status' => getHttpStatusMessages(200),
+            ], 200);
         }
 
-        return response()->json(['data' => 'Unauthorized'], $this->statusList['unauthorized']);
+        return response()->json([
+            'data' => [],
+            'status' => getHttpStatusMessages(401),
+        ], 401);
     }
 
     public function register(Request $request)
@@ -43,7 +49,10 @@ class UserController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 401);
+            return response()->json([
+                'error' => $validator->errors(),
+                'status' => getHttpStatusMessages(400),
+            ], 400);
         }
 
         $input = $request->all();
@@ -54,12 +63,18 @@ class UserController extends Controller
         $success['token'] = $user->createToken('MyApp')->accessToken;
         $success['name'] = $user->name;
 
-        return response()->json(['data' => $success], $this->statusList['success']);
+        return response()->json([
+            'data' => $success,
+            'status' => getHttpStatusMessages(200),
+        ], 200);
     }
 
     public function details()
     {
         $user = Auth::user();
-        return response()->json(['data' => $user], $this->statusList['success']);
+        return response()->json([
+            'data' => $user,
+            'status' => getHttpStatusMessages(200),
+        ], 200);
     }
 }
