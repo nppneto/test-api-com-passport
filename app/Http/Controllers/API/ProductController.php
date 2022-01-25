@@ -7,16 +7,18 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
-use Illuminate\Http\Request;
+use App\Http\Requests\ProductRequest;
+use App\Http\Resources\ProductResource;
+use App\Http\Resources\ProductCollection;
 
 class ProductController extends Controller
 {
-    public $statusList = [
-        'success' => 200,
-        'unauthorized' => 401,
-        'not-found' => 404,
-        'internal-error' => 500,
-    ];
+    // public $statusList = [
+    //     'success' => 200,
+    //     'unauthorized' => 401,
+    //     'not-found' => 404,
+    //     'internal-error' => 500,
+    // ];
 
     /**
      * Display a listing of the resource.
@@ -26,25 +28,26 @@ class ProductController extends Controller
     public function index(Product $product)
     {
         $products = $product->all();
-        return response()->json(['data' => $products], $this->statusList['success']);
+
+        return response()->json([
+            'data' => new ProductCollection($products), 
+            'status' => getHttpStatusMessages(200),
+        ], 200);
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  App\Http\Requests\ProductRequest $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request, Product $product)
+    public function store(ProductRequest $request, Product $product)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|min:3|max:80',
-            'description' => 'max:255',
-            'price' => 'required',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], $this->statusList['unauthorized']);
+        if ($request->fails()) {
+            return response()->json([
+                'errors' => $request->errors(), 
+                'status' => getHttpStatusMessages(400),
+            ], 400);
         }
 
         $input = $request->all();
@@ -54,7 +57,10 @@ class ProductController extends Controller
 
         $product = $product->create($input);
 
-        return response()->json(['data' => $product], $this->statusList['success']);
+        return response()->json([
+            'data' => new ProductResource($product), 
+            'status' =>getHttpStatusMessages(201),
+        ], 201);
     }
 
     /**
@@ -68,35 +74,40 @@ class ProductController extends Controller
         $product = $product->where('slug', $slug)->first();
 
         if (!$product) {
-            return response()->json([], $this->statusList['not-found']);
+            return response()->json([
+                'data' => [],
+                'status' => getHttpStatusMessages(404),
+            ], 404);
         }
 
-        return response()->json(['data' => $product], $this->statusList['success']);
+        return response()->json([
+            'data' => new ProductResource($product), 
+            'status' => getHttpStatusMessages(200)], 200);
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  App\Http\Requests\ProductRequest $request
      * @param  \App\Models\Product  $product
      * @return \Illuminate\Http\Response
      */
-    public function update($slug, Request $request, Product $product)
+    public function update($slug, ProductRequest $request, Product $product)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|min:3|max:80|unique:products',
-            'description' => 'max:255',
-            'price' => 'required',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], $this->statusList['unauthorized']);
+        if ($request->fails()) {
+            return response()->json([
+                'errors' => $request->errors(), 
+                'status' => getHttpStatusMessages(400),
+            ], 400);
         }
 
         $product = $product->where('slug', $slug)->first();
 
         if (!$product) {
-            return response()->json([], $this->statusList['not-found']);
+            return response()->json([
+                'data' => [],
+                'status' => getHttpStatusMessages(404),
+            ], 404);
         }
 
         $info = $request->all();
@@ -106,10 +117,16 @@ class ProductController extends Controller
         $updated = $product->update($info);
 
         if (!$updated) {
-            return response()->json([], $this->statusList['internal-error']);
+            return response()->json([
+                'data' => [],
+                'status' => getHttpStatusMessages(500),
+            ], 500);
         }
 
-        return response()->json(['data' => $product], $this->statusList['success']);
+        return response()->json([
+            'data' => new ProductResource($product),
+            'status' => getHttpStatusMessages(200),
+        ], 200);
     }
 
     /**
@@ -123,11 +140,17 @@ class ProductController extends Controller
         $product = $product->where('slug', $slug)->first();
 
         if (!$product) {
-            return response()->json([], $this->statusList['not-found']);
+            return response()->json([
+                'data' => [],
+                'status' => getHttpStatusMessages(404),
+            ], 404);
         }
 
         $product->delete();
 
-        return response()->json(['data' => "$slug removido."], $this->statusList['success']);
+        return response()->json([
+            'data' => "$slug removido.",
+            'status' => getHttpStatusMessages(200)
+        ], 200);
     }
 }

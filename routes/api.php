@@ -23,7 +23,7 @@ Route::group(['middleware' => 'auth:api'], function() {
     Route::get('user/details', [UserController::class, 'details'])->name('user.details');
 
     // Produtos
-    Route::get('produtos', [ProductController::class, 'index'])->name('product.index');
+    Route::get('products', [ProductController::class, 'index'])->name('product.index');
     Route::post('product', [ProductController::class, 'store'])->name('product.store');
     Route::get('product/{slug}', [ProductController::class, 'show'])->name('product.show');
     Route::put('product/{slug}', [ProductController::class, 'update'])->name('product.update');
